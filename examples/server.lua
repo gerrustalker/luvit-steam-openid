@@ -1,5 +1,5 @@
 local mooncake = require("mooncake")
-local OIDC = require("../openidc.lua")
+local OIDC = require("../openidc.lua") -- replace with "steam-openidc"
 
 local server = mooncake:new()
 server:get("/", function(req, res)

@@ -5,3 +5,6 @@
 ## Installation
 1. Clone this repository to your `deps` folder
 2. Run `lit install`
+
+## Credits
+* [xPaw/SteamOpenID.php](https://github.com/xPaw/SteamOpenID.php/)

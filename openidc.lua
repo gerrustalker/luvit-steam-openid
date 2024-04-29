@@ -54,7 +54,7 @@ return function(data, url, cb)
         local s, res, body = pcall(http.request,
             "POST", "https://steamcommunity.com/openid/login", {
                 {"Content-Type", "application/x-www-form-urlencoded"},
-                {"User-Agent", "OpenID Verification (+https://vastrp.ru)"}
+                {"User-Agent", "OpenID Verification (+https://github.com/gerrustalker/luvit-steam-openid)"}
             }, query.stringify(args))
 
         if not s then return cb(false, "http request error") end

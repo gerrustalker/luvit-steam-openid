@@ -4,7 +4,7 @@ local OIDC = require("../openidc.lua") -- replace with "steam-openidc"
 local server = mooncake:new()
 server:get("/", function(req, res)
     if req.query["openid.claimed_id"] then
-        OIDC(req.query, "http://0.0.0.0:8563", function(steamid, err)
+        OIDC(req.query, "http://localhost:8563", function(steamid, err)
             if not steamid then return res:status(401):send("Error: " .. err) end
             res:status(200):send(steamid)
         end)

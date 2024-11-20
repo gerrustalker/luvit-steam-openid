@@ -21,6 +21,8 @@ local ParseKeyValues = function(res)
     return keys
 end
 
+local OPENID_NS = "http://specs.openid.net/auth/2.0"
+
 return function(data, url, cb)
     if data["openid.mode"] ~= "id_res" then return cb(false, "invalid openid mode") end
 
@@ -43,13 +45,15 @@ return function(data, url, cb)
 
     if args.openid_claimed_id ~= args.openid_identity then return cb(false, "openid_claimed_id not equals to openid_identity") end -- idk
     if args.openid_op_endpoint ~= "https://steamcommunity.com/openid/login" then return cb(false, "endpoint is not Steam") end
-    if args.openid_ns ~= "http://specs.openid.net/auth/2.0" then return cb(false, "bad specs") end
+    if args.openid_ns ~= OPENID_NS then return cb(false, "bad specs") end
+    if args.openid_signed ~= "signed,op_endpoint,claimed_id,identity,return_to,response_nonce,assoc_handle" then return cb(false, "invalid signed") end
     if string.find(args.openid_return_to, url) ~= 1 then return cb(false, "openid_return_to does not point to server") end
 
     local steamid = string.match(args.openid_identity, "^https?://steamcommunity.com/openid/id/(7656119%d%d%d%d%d%d%d%d%d%d)/?$")
     if not steamid then return cb(false, "bad identity SteamID") end
 
     args.openid_mode = "check_authentication"
+    for k, v in pairs(args) do args[string.gsub(k, "openid_", "openid.")], args[k] = v, nil end
     coroutine.wrap(function()
         local s, res, body = pcall(http.request,
             "POST", "https://steamcommunity.com/openid/login", {
@@ -59,9 +63,10 @@ return function(data, url, cb)
 
         if not s then return cb(false, "http request error") end
         if res.code ~= 200 then return cb(false, res.reason) end
+        if string.find(body, "<!DOCTYPE html>") then return cb(false, "steam error") end
 
-        local kv = ParseKeyValues(body)
-        if kv.ns ~= "http://specs.openid.net/auth/2.0" then return cb(false, "bad steam specs") end
+        local s, kv = pcall(ParseKeyValues, body) if not s then return cb(false, "parse failure") end
+        if kv.ns ~= OPENID_NS then return cb(false, "bad steam specs") end
         if kv.is_valid ~= "true" then return cb(false, "not valid") end
 
         cb(steamid)
